@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Contact {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phoneNumber String
+  createdAt   DateTime @default(now())
+}
+
+model Car {
+  id           Int      @id @default(autoincrement())
+  stockNumber  String   @unique
+  source       String   @default("demo")
+  sourceUrl    String?  @unique
+  currency     String   @default("AUD")
+  make         String
+  model        String
+  grade        String
+  year         Int
+  price        Int
+  mileage      Int
+  engine       String
+  transmission String
+  drivetrain   String
+  colour       String
+  seats        Int
+  location     String
+  inspection   String?
+  repairHistory String?
+  bodyType     String?
+  dealerName   String?
+  imageUrl     String
+  featured     Boolean  @default(false)
+  scrapedAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([source])
+  @@index([make, model])
+  @@index([price])
+  @@index([year])
+}
+
+model Student {
+  id                  Int          @id @default(autoincrement())
+  name                String
+  email               String       @unique
+  university          String
+  studyYear           Int
+  major               String
+  gpa                  Float
+  graduationDate      DateTime
+  visaStatus          String
+  visaWorkRights      String
+  githubUrl           String?
+  linkedinUrl         String?
+  preferredIndustries String[]
+  preferredPositions  String[]
+  preferredLocations  String[]
+  salaryMin           Int
+  salaryMax           Int
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  experiences         Experience[]
+  projects            Project[]
+  skills              StudentSkill[]
+  languages           StudentLanguage[]
+  certificates        Certificate[]
+  awards               Award[]
+  savedJobs            SavedJob[]
+  user                 User?
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(STUDENT)
+  studentId    Int?      @unique
+  student      Student?  @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  sessions     Session[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Experience {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  company     String
+  title       String
+  startDate   DateTime
+  endDate     DateTime?
+  description String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id          Int     @id @default(autoincrement())
+  studentId   Int
+  name        String
+  description String
+  technologies String[]
+  projectUrl  String?
+  student     Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Skill {
+  id       Int            @id @default(autoincrement())
+  name     String         @unique
+  students StudentSkill[]
+  jobs     JobSkill[]
+}
+
+model StudentSkill {
+  studentId Int
+  skillId   Int
+  level     String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, skillId])
+}
+
+model StudentLanguage {
+  id          Int     @id @default(autoincrement())
+  studentId   Int
+  language    String
+  proficiency String
+  student     Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Certificate {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  name      String
+  issuer    String
+  issueDate DateTime
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Award {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  name        String
+  issuer      String
+  awardedDate DateTime
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id                 Int        @id @default(autoincrement())
+  company            String
+  companyInitials    String
+  companyColour      String
+  position           String
+  industry           String
+  employmentType     String
+  description        String
+  responsibilities   String[]
+  yearsExperience    Int
+  salaryMin          Int
+  salaryMax          Int
+  location           String
+  workMode           String
+  visaRequirement    String
+  applicationDeadline DateTime
+  postedAt           DateTime   @default(now())
+  skills             JobSkill[]
+  savedBy            SavedJob[]
+}
+
+model JobSkill {
+  jobId    Int
+  skillId  Int
+  required Boolean @default(true)
+  job      Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill    Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([jobId, skillId])
+}
+
+model SavedJob {
+  studentId Int
+  jobId     Int
+  createdAt DateTime @default(now())
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, jobId])
+}

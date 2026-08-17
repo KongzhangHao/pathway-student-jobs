@@ -1,0 +1,19 @@
+CREATE TYPE "Role" AS ENUM ('STUDENT', 'ADMIN');
+CREATE TABLE "User" (
+  "id" SERIAL PRIMARY KEY,
+  "email" TEXT NOT NULL UNIQUE,
+  "passwordHash" TEXT NOT NULL,
+  "role" "Role" NOT NULL DEFAULT 'STUDENT',
+  "studentId" INTEGER UNIQUE REFERENCES "Student"("id") ON DELETE SET NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
+);
+CREATE TABLE "Session" (
+  "id" SERIAL PRIMARY KEY,
+  "token" TEXT NOT NULL UNIQUE,
+  "userId" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX "Session_userId_idx" ON "Session"("userId");
+CREATE INDEX "Session_expiresAt_idx" ON "Session"("expiresAt");
