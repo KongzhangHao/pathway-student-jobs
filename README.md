@@ -2,10 +2,12 @@
 
 Pathway is a student job-matching application built with Next.js, TypeScript, Prisma, and PostgreSQL. It keeps a complete student profile, ranks opportunities, explains each match, saves roles, and creates tailored cover-letter drafts.
 
-## Demo accounts
+## Local demo accounts
 
 - Student: `maya.chen@example.com` / `Student123!`
 - Administrator: `admin@pathway.app` / `Admin123!`
+
+Set `SEED_ADMIN_PASSWORD` before seeding a public environment so the deployed administrator account does not use the local demo password.
 
 Sessions are stored in PostgreSQL and protected by secure, HTTP-only cookies. Student and administrator pages enforce their roles on the server.
 

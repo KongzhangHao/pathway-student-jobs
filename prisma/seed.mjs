@@ -4,6 +4,7 @@ import { randomBytes, scryptSync } from "node:crypto";
 const prisma = new PrismaClient();
 
 const skillNames = ["Python", "SQL", "Tableau", "Excel", "R", "JavaScript", "React", "Node.js", "AWS", "Figma", "Git"];
+const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin123!";
 
 function hashPassword(password) {
   const salt = randomBytes(16).toString("hex");
@@ -58,7 +59,7 @@ async function main() {
   await prisma.user.upsert({
     where: { email: "admin@pathway.app" },
     update: { role: "ADMIN" },
-    create: { email: "admin@pathway.app", passwordHash: hashPassword("Admin123!"), role: "ADMIN" }
+    create: { email: "admin@pathway.app", passwordHash: hashPassword(adminPassword), role: "ADMIN" }
   });
 }
 
