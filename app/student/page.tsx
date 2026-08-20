@@ -13,6 +13,20 @@ export default async function StudentHome() {
   if (!student) redirect("/student/profile");
   const jobs = await prisma.job.findMany({ include: { skills: { include: { skill: true } } }, orderBy: { applicationDeadline: "asc" } });
   const rankedJobs = jobs.map((job) => ({ ...job, ...scoreJob(student, job) })).sort((a, b) => b.matchScore - a.matchScore);
-  const payload = { student: { ...student, graduationDate: student.graduationDate.toISOString(), skills: student.skills.map(({ level, skill }) => ({ name: skill.name, level })), experiences: student.experiences.map((item) => ({ ...item, startDate: item.startDate.toISOString(), endDate: item.endDate?.toISOString() ?? null })), certificates: student.certificates.map((item) => ({ ...item, issueDate: item.issueDate.toISOString() })), awards: student.awards.map((item) => ({ ...item, awardedDate: item.awardedDate.toISOString() })), savedJobIds: student.savedJobs.map(({ jobId }) => jobId) }, jobs: rankedJobs.map((job) => ({ ...job, applicationDeadline: job.applicationDeadline.toISOString(), postedAt: job.postedAt.toISOString(), skills: undefined })) };
+  const studentPayload = {
+    id: student.id, name: student.name, email: student.email, university: student.university, studyYear: student.studyYear,
+    major: student.major, gpa: student.gpa, graduationDate: student.graduationDate.toISOString(), visaStatus: student.visaStatus,
+    visaWorkRights: student.visaWorkRights, githubUrl: student.githubUrl, linkedinUrl: student.linkedinUrl,
+    preferredIndustries: student.preferredIndustries, preferredPositions: student.preferredPositions,
+    preferredLocations: student.preferredLocations, salaryMin: student.salaryMin, salaryMax: student.salaryMax,
+    skills: student.skills.map(({ level, skill }) => ({ name: skill.name, level })),
+    experiences: student.experiences.map(({ id, company, title, description, startDate, endDate }) => ({ id, company, title, description, startDate: startDate.toISOString(), endDate: endDate?.toISOString() ?? null })),
+    projects: student.projects.map(({ id, name, description, technologies, projectUrl }) => ({ id, name, description, technologies, projectUrl })),
+    languages: student.languages.map(({ id, language, proficiency }) => ({ id, language, proficiency })),
+    certificates: student.certificates.map(({ id, name, issuer, issueDate }) => ({ id, name, issuer, issueDate: issueDate.toISOString() })),
+    awards: student.awards.map(({ id, name, issuer, awardedDate }) => ({ id, name, issuer, awardedDate: awardedDate.toISOString() })),
+    savedJobIds: student.savedJobs.map(({ jobId }) => jobId),
+  };
+  const payload = { generatedAt: new Date().toISOString(), student: studentPayload, jobs: rankedJobs.map((job) => ({ ...job, applicationDeadline: job.applicationDeadline.toISOString(), postedAt: job.postedAt.toISOString(), skills: undefined })) };
   return <CareerDashboard initialData={payload} />;
 }
