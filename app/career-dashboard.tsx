@@ -54,6 +54,18 @@ function JobCard({ job, saved, onSave, onOpen, onLetter }: { job: Job; saved: bo
   </article>;
 }
 
+function SkillComparison({ student, job }: { student: Student; job: Job }) {
+  const levels = new Map(student.skills.map((skill) => [skill.name.trim().toLowerCase(), skill.level]));
+  return <section className="skill-comparison" aria-labelledby="skill-comparison-title">
+    <h3 id="skill-comparison-title">Required skills comparison</h3>
+    <div className="skill-comparison-summary"><div><strong>{job.matchingSkills.length} of {job.requiredSkills.length}</strong><span>required skills in your profile</span></div><b>{job.matchScore}%</b></div>
+    {job.requiredSkills.length === 0 ? <p className="skill-comparison-empty">This job has no required skills listed.</p> : <div className="skill-comparison-groups">
+      <div><h4>Matched <span>{job.matchingSkills.length}</span></h4><div className="comparison-skills">{job.matchingSkills.map((skill) => <span className="matched" key={skill}>✓ {skill}<small>{levels.get(skill.trim().toLowerCase())}</small></span>)}</div></div>
+      <div><h4>Missing <span>{job.missingSkills.length}</span></h4><div className="comparison-skills">{job.missingSkills.map((skill) => <span className="missing" key={skill}>{skill}</span>)}</div></div>
+    </div>}
+  </section>;
+}
+
 export function CareerDashboard({ initialData }: { initialData: { student: Student; jobs: Job[] } }) {
   const router = useRouter();
   const { student, jobs } = initialData;
@@ -107,7 +119,7 @@ export function CareerDashboard({ initialData }: { initialData: { student: Stude
       </>}
     </main>
 
-    {selected ? <div className="detail-drawer" role="dialog" aria-modal="true" aria-label="Job match details"><button className="drawer-close" onClick={() => setSelected(null)}>×</button><div className="company-logo large" style={{ background: selected.companyColour }}>{selected.companyInitials}</div><span className="eyebrow">{selected.matchScore}% required skills match</span><h2>{selected.position}</h2><p className="drawer-company">{selected.company} · {selected.location} · {selected.workMode}</p><div className="drawer-summary">{selected.description}</div><h3>Required skills comparison</h3><ul className="fit-list">{selected.matchingSkills.map((skill) => <li key={skill}><span>✓</span><div><strong>{skill} is a direct match</strong><p>Your profile includes this required skill.</p></div></li>)}{selected.missingSkills.map((skill) => <li className="gap" key={skill}><span>↗</span><div><strong>{skill} is an opportunity to grow</strong><p>This required skill is not currently listed in your profile.</p></div></li>)}</ul><div className="job-facts"><span><small>Experience</small>{selected.yearsExperience === 0 ? "Graduate friendly" : `${selected.yearsExperience}+ years`}</span><span><small>Salary</small>{money(selected.salaryMin)}–{money(selected.salaryMax)}</span><span><small>Visa</small>{selected.visaRequirement}</span></div><div className="drawer-actions"><button className="secondary-button" onClick={() => toggleSave(selected.id)}>{saved.includes(selected.id) ? "Saved ♥" : "Save job"}</button><button className="primary-button" onClick={() => setLetterJob(selected)}>Create cover letter</button></div></div> : null}
+    {selected ? <div className="detail-drawer" role="dialog" aria-modal="true" aria-label="Job match details"><button className="drawer-close" onClick={() => setSelected(null)}>×</button><div className="company-logo large" style={{ background: selected.companyColour }}>{selected.companyInitials}</div><span className="eyebrow">{selected.matchScore}% required skills match</span><h2>{selected.position}</h2><p className="drawer-company">{selected.company} · {selected.location} · {selected.workMode}</p><div className="drawer-summary">{selected.description}</div><SkillComparison student={student} job={selected} /><div className="job-facts"><span><small>Experience</small>{selected.yearsExperience === 0 ? "Graduate friendly" : `${selected.yearsExperience}+ years`}</span><span><small>Salary</small>{money(selected.salaryMin)}–{money(selected.salaryMax)}</span><span><small>Visa</small>{selected.visaRequirement}</span></div><div className="drawer-actions"><button className="secondary-button" onClick={() => toggleSave(selected.id)}>{saved.includes(selected.id) ? "Saved ♥" : "Save job"}</button><button className="primary-button" onClick={() => setLetterJob(selected)}>Create cover letter</button></div></div> : null}
     {selected ? <button className="drawer-scrim" aria-label="Close job details" onClick={() => setSelected(null)} /> : null}
     {letterJob ? <CoverLetter student={student} job={letterJob} onClose={() => setLetterJob(null)} /> : null}
   </div>;
